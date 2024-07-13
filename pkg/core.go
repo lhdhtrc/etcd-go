@@ -49,23 +49,3 @@ func (core *CoreEntity) Setup(config *ConfigEntity) (*clientv3.Client, error) {
 
 	return cli, nil
 }
-
-func (core *CoreEntity) Pub(info *PubEntity) {
-	if cli, ce := core.Cli(info.CK); ce == nil {
-		lease := core.Lease(info.LK)
-		for _, raw := range info.Raw {
-			val, _ := json.Marshal(raw.Value)
-			if lease != 0 {
-				if _, err := cli.Put(context.Background(), raw.Key, string(val), clientv3.WithLease(lease)); err != nil {
-					core.logger.Error(err.Error())
-				}
-			} else {
-				if _, err := cli.Put(context.Background(), raw.Key, string(val)); err != nil {
-					core.logger.Error(err.Error())
-				}
-			}
-		}
-	} else {
-		core.logger.Error(ce.Error())
-	}
-}
