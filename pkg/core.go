@@ -50,22 +50,6 @@ func (core *CoreEntity) Setup(config *ConfigEntity) (*clientv3.Client, error) {
 	return cli, nil
 }
 
-func (core *CoreEntity) Cli(key string) (*clientv3.Client, error) {
-	cli, ok := core.cli[key]
-	if !ok {
-		return nil, fmt.Errorf("etcd cli key not found")
-	}
-	return cli, nil
-}
-
-func (core *CoreEntity) Lease(key string) clientv3.LeaseID {
-	lease, ok := core.lease[key]
-	if !ok {
-		return 0
-	}
-	return lease
-}
-
 func (core *CoreEntity) Pub(info *PubEntity) {
 	if cli, ce := core.Cli(info.CK); ce == nil {
 		lease := core.Lease(info.LK)
