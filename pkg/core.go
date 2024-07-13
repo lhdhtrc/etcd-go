@@ -1,19 +1,17 @@
-package core
+package pkg
 
 import (
 	"context"
 	"fmt"
-	"github.com/lhdhtrc/etcd-go/model"
 	"go.etcd.io/etcd/client/pkg/v3/transport"
 	clientv3 "go.etcd.io/etcd/client/v3"
-	"go.uber.org/zap"
 	"strings"
 	"time"
 )
 
-func Setup(logger *zap.Logger, config *model.ConfigEntity) *clientv3.Client {
+func (core *CoreEntity) Setup(config *ConfigEntity) (*clientv3.Client, error) {
 	logPrefix := "setup etcd"
-	logger.Info(fmt.Sprintf("%s %s", logPrefix, "start ->"))
+	fmt.Printf("%s %s\n", logPrefix, "start ->")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -37,23 +35,17 @@ func Setup(logger *zap.Logger, config *model.ConfigEntity) *clientv3.Client {
 
 		tlsConfig, err := tlsInfo.ClientConfig()
 		if err != nil {
-			logger.Error(fmt.Sprintf("%s %s", logPrefix, err.Error()))
-			return nil
+			return nil, err
 		}
 		clientOptions.TLS = tlsConfig
 	}
 
-	if config.Mode { // cluster
-		clientOptions.AutoSyncInterval = 15 * time.Second
-	}
-
 	cli, err := clientv3.New(clientOptions)
 	if err != nil {
-		logger.Error(fmt.Sprintf("%s %s", logPrefix, err.Error()))
-		return nil
+		return nil, err
 	}
 
-	logger.Info(fmt.Sprintf("%s %s", logPrefix, "success ->"))
+	fmt.Printf("%s %s", logPrefix, "success ->")
 
-	return cli
+	return cli, nil
 }
