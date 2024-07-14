@@ -9,8 +9,16 @@ import (
 type CoreEntity struct {
 	ctx    context.Context
 	cancel context.CancelFunc
-	cli    *clientv3.Client
-	lease  map[string]clientv3.LeaseID
+
+	cli   *clientv3.Client
+	lease clientv3.LeaseID
+
+	ttl              int64
+	maxRetry         uint
+	countRetry       uint
+	leaseRetryBefore func()
+	leaseRetryAfter  func()
+
 	logger *zap.Logger
 }
 
