@@ -64,6 +64,7 @@ func (core *CoreEntity) Uninstall() {
 	}
 
 	core.cancel()
+	fmt.Println("uninstall etcd success")
 }
 
 func (core *CoreEntity) Pub(raw *RawEntity) {
