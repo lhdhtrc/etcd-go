@@ -1,32 +1,29 @@
-package pkg
+package etcd
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
-	"go.etcd.io/etcd/client/pkg/v3/transport"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"go.uber.org/zap"
-	"strings"
-	"time"
 )
 
-func New(logger *zap.Logger, config *ConfigEntity) *CoreEntity {
+func New(logger *zap.Logger, config *ConfigEntity) (*CoreEntity, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	core := &CoreEntity{
-		ctx:    ctx,
-		cancel: cancel,
-		lease:  make(map[string]clientv3.LeaseID),
-		logger: logger,
+		ctx:      ctx,
+		cancel:   cancel,
+		logger:   logger,
+		ttl:      config.TTL,
+		maxRetry: config.MaxRetry,
 	}
 
-	if cli, err := core.Setup(config); err == nil {
-		core.cli = cli
+	if cli, err := core.install(config); err != nil {
+		return nil, err
 	} else {
-		logger.Error(err.Error())
+		core.cli = cli
 	}
-
-	core.initLease()
 
 	return core, nil
 }
