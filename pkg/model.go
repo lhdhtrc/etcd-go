@@ -9,7 +9,7 @@ import (
 type CoreEntity struct {
 	ctx    context.Context
 	cancel context.CancelFunc
-	cli    map[string]*clientv3.Client
+	cli    *clientv3.Client
 	lease  map[string]clientv3.LeaseID
 	logger *zap.Logger
 }
