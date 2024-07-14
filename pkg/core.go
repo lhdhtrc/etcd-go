@@ -93,3 +93,14 @@ func (core *CoreEntity) Pub(raw *RawEntity) {
 		}
 	}
 }
+
+func (core *CoreEntity) Sub(prefix string, adapter func(e *clientv3.Event)) {
+	wc := core.cli.Watch(core.ctx, prefix, clientv3.WithPrefix(), clientv3.WithPrevKV())
+	go func() {
+		for v := range wc {
+			for _, e := range v.Events {
+				adapter(e)
+			}
+		}
+	}()
+}
