@@ -10,23 +10,20 @@ import (
 	"time"
 )
 
-func New(logger *zap.Logger, options *map[string]*ConfigEntity) *CoreEntity {
+func New(logger *zap.Logger, config *ConfigEntity) *CoreEntity {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	core := &CoreEntity{
 		ctx:    ctx,
 		cancel: cancel,
-		cli:    make(map[string]*clientv3.Client),
 		lease:  make(map[string]clientv3.LeaseID),
 		logger: logger,
 	}
 
-	for key, config := range *options {
-		if cli, err := core.Setup(config); err == nil {
-			core.cli[key] = cli
-		} else {
-			logger.Error(err.Error())
-		}
+	if cli, err := core.Setup(config); err == nil {
+		core.cli = cli
+	} else {
+		logger.Error(err.Error())
 	}
 
 	return core
