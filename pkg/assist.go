@@ -1,16 +1,11 @@
 package pkg
 
 import (
-	"fmt"
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
-func (core *CoreEntity) Cli(key string) (*clientv3.Client, error) {
-	cli, ok := core.cli[key]
-	if !ok {
-		return nil, fmt.Errorf("etcd cli key not found")
-	}
-	return cli, nil
+func (core *CoreEntity) Cli() *clientv3.Client {
+	return core.cli
 }
 
 func (core *CoreEntity) Lease(key string) clientv3.LeaseID {
