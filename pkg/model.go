@@ -47,8 +47,8 @@ type RawEntity struct {
 }
 
 type ServiceEntity struct {
-	Name      string       `json:"name"`
-	Namespace string       `json:"namespace"`
-	Endpoint  string       `json:"endpoint"`
-	Srv       *interface{} `json:"srv"`
+	Name      string      `json:"name"`
+	Namespace string      `json:"namespace"`
+	Endpoint  string      `json:"endpoint"`
+	Srv       interface{} `json:"srv"`
 }
