@@ -26,7 +26,9 @@ func New(logger *zap.Logger, config *ConfigEntity) *CoreEntity {
 		logger.Error(err.Error())
 	}
 
-	return core
+	core.initLease()
+
+	return core, nil
 }
 
 func (core *CoreEntity) Setup(config *ConfigEntity) (*clientv3.Client, error) {
