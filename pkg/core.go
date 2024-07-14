@@ -67,7 +67,7 @@ func (core *CoreEntity) InitLease() {
 
 func (core *CoreEntity) Uninstall() {
 	if _, err := core.cli.Revoke(core.ctx, core.lease); err != nil {
-		core.logger.Error(err.Error())
+		fmt.Println(err.Error())
 		return
 	}
 

@@ -58,7 +58,7 @@ func (core *CoreEntity) retryLease() {
 		time.Sleep(5 * time.Second)
 
 		core.countRetry++
-		fmt.Printf("etcd retry lease: %d/%d\n", core.countRetry, core.maxRetry)
+		core.logger.Info(fmt.Sprintf("etcd retry lease: %d/%d", core.countRetry, core.maxRetry))
 		core.InitLease()
 
 		if core.leaseRetryAfter != nil {
