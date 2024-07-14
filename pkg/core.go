@@ -31,6 +31,40 @@ func New(logger *zap.Logger, config *ConfigEntity) *CoreEntity {
 	return core, nil
 }
 
+func (core *CoreEntity) InitLease() {
+	logPrefix := "etcd init lease"
+	fmt.Printf("%s %s\n", logPrefix, "start ->")
+
+	if core.cli == nil {
+		fmt.Printf("%s %s\n", logPrefix, "etcd client not found")
+		return
+	}
+
+	grant, ge := core.cli.Grant(core.ctx, core.ttl)
+	if ge != nil {
+		core.retryLease()
+		fmt.Printf("%s %s\n", logPrefix, ge.Error())
+		return
+	}
+
+	kac, ke := core.cli.KeepAlive(core.ctx, grant.ID)
+	if ke != nil {
+		core.retryLease()
+		fmt.Printf("%s %s\n", logPrefix, ke.Error())
+		return
+	}
+	core.lease = grant.ID
+	core.countRetry = 0
+
+	go func() {
+		for range kac {
+		}
+		core.retryLease()
+		fmt.Println("stop etcd lease success")
+	}()
+	fmt.Printf("%s %s\n", logPrefix, "success ->")
+}
+
 func (core *CoreEntity) Pub(raw *RawEntity) {
 	var val string
 	if str, ok := raw.Value.(string); ok {
