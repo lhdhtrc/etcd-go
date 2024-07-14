@@ -29,6 +29,7 @@ func (core *CoreEntity) Pub(ck, lk string, raw *RawEntity) {
 	}
 }
 
+// PubRaw batch send kv
 func (core *CoreEntity) PubRaw(info *PubEntity) {
 	if cli, ce := core.Cli(info.CK); ce == nil {
 		lease := core.Lease(info.LK)
