@@ -5,9 +5,32 @@ import (
 	"fmt"
 	"go.etcd.io/etcd/client/pkg/v3/transport"
 	clientv3 "go.etcd.io/etcd/client/v3"
+	"go.uber.org/zap"
 	"strings"
 	"time"
 )
+
+func New(logger *zap.Logger, options *map[string]*ConfigEntity) *CoreEntity {
+	ctx, cancel := context.WithCancel(context.Background())
+
+	core := &CoreEntity{
+		ctx:    ctx,
+		cancel: cancel,
+		cli:    make(map[string]*clientv3.Client),
+		lease:  make(map[string]clientv3.LeaseID),
+		logger: logger,
+	}
+
+	for key, config := range *options {
+		if cli, err := core.Setup(config); err == nil {
+			core.cli[key] = cli
+		} else {
+			logger.Error(err.Error())
+		}
+	}
+
+	return core
+}
 
 func (core *CoreEntity) Setup(config *ConfigEntity) (*clientv3.Client, error) {
 	logPrefix := "setup etcd"
