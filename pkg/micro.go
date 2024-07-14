@@ -12,7 +12,7 @@ func (core *CoreEntity) Register(service *ServiceEntity) {
 
 	lease := core.Lease(service.LK)
 	for i := 0; i < length; i++ {
-		core.Pub(service.CK, service.LK, &RawEntity{
+		core.Pub(lease, &RawEntity{
 			Key:   fmt.Sprintf("%s/%s/%s/%d", service.Namespace, service.Name, ref.Method(i).Name, lease),
 			Value: service.Endpoint,
 		})
