@@ -73,6 +73,7 @@ func (core *CoreEntity) initLease() {
 		return
 	}
 	core.lease = grant.ID
+	core.countRetry = 0
 
 	go func() {
 		for range kac {
