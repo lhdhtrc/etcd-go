@@ -27,8 +27,9 @@ type ConfigEntity struct {
 	Password string `json:"password" bson:"password" yaml:"password" mapstructure:"password"`
 	Address  string `json:"address" yaml:"address" mapstructure:"address"`
 
-	Mode         bool `json:"mode" yaml:"mode" mapstructure:"mode"` // Mode is true cluster
-	LoggerEnable bool `json:"logger_enable" bson:"logger_enable" yaml:"logger_enable" mapstructure:"logger_enable"`
+	TTL      int64 `json:"ttl" yaml:"ttl" mapstructure:"ttl"`
+	MaxRetry uint  `json:"max_retry" yaml:"max_retry" mapstructure:"max_retry"`
+	Mode     bool  `json:"mode" yaml:"mode" mapstructure:"mode"` // Mode is true cluster
 }
 
 type RawEntity struct {
