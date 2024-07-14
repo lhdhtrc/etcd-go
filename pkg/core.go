@@ -52,7 +52,6 @@ func (core *CoreEntity) InitLease() {
 		for range kac {
 		}
 		core.retryLease()
-		fmt.Println("stop etcd lease success")
 	}()
 
 	core.logger.Info(fmt.Sprintf("%s %s", logPrefix, "success ->"))
