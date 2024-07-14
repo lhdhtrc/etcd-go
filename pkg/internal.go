@@ -9,9 +9,9 @@ import (
 	"time"
 )
 
-func (core *CoreEntity) install(config *ConfigEntity) (*clientv3.Client, error) {
+func (core *CoreEntity) install(config *ConfigEntity) *clientv3.Client {
 	logPrefix := "install etcd"
-	fmt.Printf("%s %s\n", logPrefix, "start ->")
+	core.logger.Info(fmt.Sprintf("%s %s", logPrefix, "start ->"))
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -35,19 +35,21 @@ func (core *CoreEntity) install(config *ConfigEntity) (*clientv3.Client, error) 
 
 		tlsConfig, err := tlsInfo.ClientConfig()
 		if err != nil {
-			return nil, err
+			core.logger.Error(fmt.Sprintf("error: %s", err.Error()))
+			return nil
 		}
 		clientOptions.TLS = tlsConfig
 	}
 
 	cli, err := clientv3.New(clientOptions)
 	if err != nil {
-		return nil, err
+		core.logger.Error(fmt.Sprintf("error: %s", err.Error()))
+		return nil
 	}
 
-	fmt.Printf("%s %s\n", logPrefix, "success ->")
+	core.logger.Info(fmt.Sprintf("%s %s", logPrefix, "success ->"))
 
-	return cli, nil
+	return cli
 }
 
 func (core *CoreEntity) retryLease() {

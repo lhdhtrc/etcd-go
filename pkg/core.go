@@ -18,36 +18,31 @@ func New(logger *zap.Logger, config *ConfigEntity) (*CoreEntity, error) {
 		ttl:      config.TTL,
 		maxRetry: config.MaxRetry,
 	}
-
-	if cli, err := core.install(config); err != nil {
-		return nil, err
-	} else {
-		core.cli = cli
-	}
+	core.cli = core.install(config)
 
 	return core, nil
 }
 
 func (core *CoreEntity) InitLease() {
 	logPrefix := "etcd init lease"
-	fmt.Printf("%s %s\n", logPrefix, "start ->")
+	core.logger.Info(fmt.Sprintf("%s %s", logPrefix, "start ->"))
 
 	if core.cli == nil {
-		fmt.Printf("%s %s\n", logPrefix, "etcd client not found")
+		core.logger.Error(fmt.Sprintf("%s %s\n", logPrefix, "etcd client not found"))
 		return
 	}
 
 	grant, ge := core.cli.Grant(core.ctx, core.ttl)
 	if ge != nil {
 		core.retryLease()
-		fmt.Printf("%s %s\n", logPrefix, ge.Error())
+		core.logger.Error(fmt.Sprintf("%s %s\n", logPrefix, ge.Error()))
 		return
 	}
 
 	kac, ke := core.cli.KeepAlive(core.ctx, grant.ID)
 	if ke != nil {
 		core.retryLease()
-		fmt.Printf("%s %s\n", logPrefix, ke.Error())
+		core.logger.Error(fmt.Sprintf("%s %s\n", logPrefix, ke.Error()))
 		return
 	}
 	core.lease = grant.ID
@@ -59,7 +54,8 @@ func (core *CoreEntity) InitLease() {
 		core.retryLease()
 		fmt.Println("stop etcd lease success")
 	}()
-	fmt.Printf("%s %s\n", logPrefix, "success ->")
+
+	core.logger.Info(fmt.Sprintf("%s %s", logPrefix, "success ->"))
 }
 
 func (core *CoreEntity) Uninstall() {
