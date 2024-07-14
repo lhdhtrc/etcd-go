@@ -49,3 +49,53 @@ func (core *CoreEntity) install(config *ConfigEntity) (*clientv3.Client, error) 
 
 	return cli, nil
 }
+
+func (core *CoreEntity) initLease() {
+	logPrefix := "init lease"
+	fmt.Printf("%s %s\n", logPrefix, "start ->")
+
+	if core.cli == nil {
+		fmt.Printf("%s %s\n", logPrefix, "etcd client not found")
+		return
+	}
+
+	grant, ge := core.cli.Grant(core.ctx, core.ttl)
+	if ge != nil {
+		core.retryLease()
+		fmt.Printf("%s %s\n", logPrefix, ge.Error())
+		return
+	}
+
+	kac, ke := core.cli.KeepAlive(core.ctx, grant.ID)
+	if ke != nil {
+		core.retryLease()
+		fmt.Printf("%s %s\n", logPrefix, ke.Error())
+		return
+	}
+	core.lease = grant.ID
+
+	go func() {
+		for range kac {
+		}
+		core.retryLease()
+		fmt.Println("lease stop success")
+	}()
+	fmt.Printf("%s %s\n", logPrefix, "success ->")
+}
+
+func (core *CoreEntity) retryLease() {
+	if core.countRetry < core.maxRetry {
+		if core.leaseRetryBefore != nil {
+			core.leaseRetryBefore()
+		}
+		time.Sleep(5 * time.Second)
+
+		core.countRetry++
+		fmt.Printf("retry lease: %d/%d\n", core.countRetry, core.maxRetry)
+		core.initLease()
+
+		if core.leaseRetryAfter != nil {
+			core.leaseRetryAfter()
+		}
+	}
+}
