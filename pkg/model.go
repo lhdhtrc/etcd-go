@@ -36,14 +36,7 @@ type RawEntity struct {
 	Value any    `json:"value"`
 }
 
-type PubEntity struct {
-	CK  string       `json:"ck"` // CK Cli Key
-	LK  string       `json:"lk"` // LK Lease Key
-	Raw []*RawEntity `json:"raw"`
-}
-
 type ServiceEntity struct {
-	CK        string       `json:"ck"` // CK Cli Key
 	LK        string       `json:"lk"` // LK Cli
 	Name      string       `json:"name"`
 	Namespace string       `json:"namespace"`
