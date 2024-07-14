@@ -8,10 +8,6 @@ func (core *CoreEntity) Cli() *clientv3.Client {
 	return core.cli
 }
 
-func (core *CoreEntity) Lease(key string) clientv3.LeaseID {
-	lease, ok := core.lease[key]
-	if !ok {
-		return 0
-	}
-	return lease
+func (core *CoreEntity) Lease() clientv3.LeaseID {
+	return core.lease
 }
