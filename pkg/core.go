@@ -31,43 +31,22 @@ func New(logger *zap.Logger, config *ConfigEntity) *CoreEntity {
 	return core, nil
 }
 
-func (core *CoreEntity) Setup(config *ConfigEntity) (*clientv3.Client, error) {
-	logPrefix := "setup etcd"
-	fmt.Printf("%s %s\n", logPrefix, "start ->")
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	clientOptions := clientv3.Config{
-		DialTimeout: 5 * time.Second,
-		Endpoints:   strings.Split(config.Address, ","),
-		Context:     ctx,
+func (core *CoreEntity) Pub(raw *RawEntity) {
+	var val string
+	if str, ok := raw.Value.(string); ok {
+		val = str
+	} else {
+		t, _ := json.Marshal(raw.Value)
+		val = string(t)
 	}
 
-	if config.Account != "" && config.Password != "" {
-		clientOptions.Username = config.Account
-		clientOptions.Password = config.Password
-	}
-	if config.Tls.CaCert != "" && config.Tls.ClientCert != "" && config.Tls.ClientCertKey != "" {
-		tlsInfo := transport.TLSInfo{
-			CertFile:      config.Tls.ClientCert,
-			KeyFile:       config.Tls.ClientCertKey,
-			TrustedCAFile: config.Tls.CaCert,
+	if raw.Lease != 0 {
+		if _, err := core.cli.Put(core.ctx, raw.Key, val, clientv3.WithLease(raw.Lease)); err != nil {
+			core.logger.Error(err.Error())
 		}
-
-		tlsConfig, err := tlsInfo.ClientConfig()
-		if err != nil {
-			return nil, err
+	} else {
+		if _, err := core.cli.Put(core.ctx, raw.Key, val); err != nil {
+			core.logger.Error(err.Error())
 		}
-		clientOptions.TLS = tlsConfig
 	}
-
-	cli, err := clientv3.New(clientOptions)
-	if err != nil {
-		return nil, err
-	}
-
-	fmt.Printf("%s %s", logPrefix, "success ->")
-
-	return cli, nil
 }
