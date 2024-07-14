@@ -5,25 +5,22 @@ import (
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
-func (core *CoreEntity) Pub(ck, lk string, raw *RawEntity) {
-	if cli, ce := core.Cli(ck); ce == nil {
-		var val string
-		if str, ok := raw.Value.(string); ok {
-			val = str
-		} else {
-			t, _ := json.Marshal(raw.Value)
-			val = string(t)
-		}
+func (core *CoreEntity) Pub(lease clientv3.LeaseID, raw *RawEntity) {
+	var val string
+	if str, ok := raw.Value.(string); ok {
+		val = str
+	} else {
+		t, _ := json.Marshal(raw.Value)
+		val = string(t)
+	}
 
-		lease := core.Lease(lk)
-		if lease != 0 {
-			if _, err := cli.Put(core.ctx, raw.Key, val, clientv3.WithLease(lease)); err != nil {
-				core.logger.Error(err.Error())
-			}
-		} else {
-			if _, err := cli.Put(core.ctx, raw.Key, val); err != nil {
-				core.logger.Error(err.Error())
-			}
+	if lease != 0 {
+		if _, err := core.cli.Put(core.ctx, raw.Key, val, clientv3.WithLease(lease)); err != nil {
+			core.logger.Error(err.Error())
+		}
+	} else {
+		if _, err := core.cli.Put(core.ctx, raw.Key, val); err != nil {
+			core.logger.Error(err.Error())
 		}
 	}
 }
