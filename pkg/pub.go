@@ -1,7 +1,6 @@
 package pkg
 
 import (
-	"context"
 	"encoding/json"
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
@@ -18,11 +17,11 @@ func (core *CoreEntity) Pub(ck, lk string, raw *RawEntity) {
 
 		lease := core.Lease(lk)
 		if lease != 0 {
-			if _, err := cli.Put(context.Background(), raw.Key, val, clientv3.WithLease(lease)); err != nil {
+			if _, err := cli.Put(core.ctx, raw.Key, val, clientv3.WithLease(lease)); err != nil {
 				core.logger.Error(err.Error())
 			}
 		} else {
-			if _, err := cli.Put(context.Background(), raw.Key, val); err != nil {
+			if _, err := cli.Put(core.ctx, raw.Key, val); err != nil {
 				core.logger.Error(err.Error())
 			}
 		}
@@ -42,11 +41,11 @@ func (core *CoreEntity) PubRaw(info *PubEntity) {
 				val = string(t)
 			}
 			if lease != 0 {
-				if _, err := cli.Put(context.Background(), raw.Key, val, clientv3.WithLease(lease)); err != nil {
+				if _, err := cli.Put(core.ctx, raw.Key, val, clientv3.WithLease(lease)); err != nil {
 					core.logger.Error(err.Error())
 				}
 			} else {
-				if _, err := cli.Put(context.Background(), raw.Key, val); err != nil {
+				if _, err := cli.Put(core.ctx, raw.Key, val); err != nil {
 					core.logger.Error(err.Error())
 				}
 			}
