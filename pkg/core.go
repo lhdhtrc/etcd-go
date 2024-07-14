@@ -65,6 +65,15 @@ func (core *CoreEntity) InitLease() {
 	fmt.Printf("%s %s\n", logPrefix, "success ->")
 }
 
+func (core *CoreEntity) Uninstall() {
+	if _, err := core.cli.Revoke(core.ctx, core.lease); err != nil {
+		core.logger.Error(err.Error())
+		return
+	}
+
+	core.cancel()
+}
+
 func (core *CoreEntity) Pub(raw *RawEntity) {
 	var val string
 	if str, ok := raw.Value.(string); ok {
