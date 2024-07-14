@@ -32,12 +32,12 @@ type ConfigEntity struct {
 }
 
 type RawEntity struct {
-	Key   string `json:"key"`
-	Value any    `json:"value"`
+	Key   string           `json:"key"`
+	Value any              `json:"value"`
+	Lease clientv3.LeaseID `json:"lease"`
 }
 
 type ServiceEntity struct {
-	LK        string       `json:"lk"` // LK Cli
 	Name      string       `json:"name"`
 	Namespace string       `json:"namespace"`
 	Endpoint  string       `json:"endpoint"`
