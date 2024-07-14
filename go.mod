@@ -3,6 +3,7 @@ module github.com/lhdhtrc/etcd-go
 go 1.22.1
 
 require (
+	github.com/lhdhtrc/func-go v0.1.3
 	go.etcd.io/etcd/client/pkg/v3 v3.5.13
 	go.etcd.io/etcd/client/v3 v3.5.13
 	go.uber.org/zap v1.27.0
