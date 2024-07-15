@@ -14,11 +14,7 @@ import (
 
 func main() {
 	logger, _ := zap.NewProduction()
-	instance, err := etcd.New(logger, &etcd.ConfigEntity{})
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	instance := etcd.New(logger, &etcd.ConfigEntity{})
 
 	// If you need a lease?
 	instance.InitLease()
