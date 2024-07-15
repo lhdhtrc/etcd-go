@@ -8,7 +8,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func New(logger *zap.Logger, config *ConfigEntity) (*CoreEntity, error) {
+func New(logger *zap.Logger, config *ConfigEntity) *CoreEntity {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	core := &CoreEntity{
@@ -20,7 +20,7 @@ func New(logger *zap.Logger, config *ConfigEntity) (*CoreEntity, error) {
 	}
 	core.cli = core.install(config)
 
-	return core, nil
+	return core
 }
 
 func (core *CoreEntity) InitLease() {
