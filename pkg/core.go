@@ -87,7 +87,10 @@ func (core *CoreEntity) Pub(ctx context.Context, raw *RawEntity) {
 }
 
 func (core *CoreEntity) Sub(prefix string, adapter func(e *clientv3.Event)) {
-	wc := core.cli.Watch(core.ctx, prefix, clientv3.WithPrefix(), clientv3.WithPrevKV())
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	wc := core.cli.Watch(ctx, prefix, clientv3.WithPrefix(), clientv3.WithPrevKV())
 	go func() {
 		for v := range wc {
 			for _, e := range v.Events {
