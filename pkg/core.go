@@ -58,12 +58,11 @@ func (core *CoreEntity) InitLease() {
 }
 
 func (core *CoreEntity) Uninstall() {
-	if _, err := core.cli.Revoke(core.ctx, core.lease); err != nil {
+	if _, err := core.cli.Revoke(context.Background(), core.lease); err != nil {
 		fmt.Println(err.Error())
 		return
 	}
 
-	core.cancel()
 	fmt.Println("uninstall etcd success")
 }
 
