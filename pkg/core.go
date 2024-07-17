@@ -6,14 +6,11 @@ import (
 	"fmt"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"go.uber.org/zap"
+	"time"
 )
 
 func New(logger *zap.Logger, config *ConfigEntity) *CoreEntity {
-	ctx, cancel := context.WithCancel(context.Background())
-
 	core := &CoreEntity{
-		ctx:      ctx,
-		cancel:   cancel,
 		logger:   logger,
 		ttl:      config.TTL,
 		maxRetry: config.MaxRetry,
