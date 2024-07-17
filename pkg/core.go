@@ -66,7 +66,7 @@ func (core *CoreEntity) Uninstall() {
 	fmt.Println("uninstall etcd success")
 }
 
-func (core *CoreEntity) Pub(raw *RawEntity) {
+func (core *CoreEntity) Pub(ctx context.Context, raw *RawEntity) {
 	var val string
 	if str, ok := raw.Value.(string); ok {
 		val = str
@@ -76,11 +76,11 @@ func (core *CoreEntity) Pub(raw *RawEntity) {
 	}
 
 	if raw.Lease != 0 {
-		if _, err := core.cli.Put(core.ctx, raw.Key, val, clientv3.WithLease(raw.Lease)); err != nil {
+		if _, err := core.cli.Put(ctx, raw.Key, val, clientv3.WithLease(raw.Lease)); err != nil {
 			core.logger.Error(err.Error())
 		}
 	} else {
-		if _, err := core.cli.Put(core.ctx, raw.Key, val); err != nil {
+		if _, err := core.cli.Put(ctx, raw.Key, val); err != nil {
 			core.logger.Error(err.Error())
 		}
 	}
