@@ -29,14 +29,17 @@ func (core *CoreEntity) InitLease() {
 		return
 	}
 
-	grant, ge := core.cli.Grant(core.ctx, core.ttl)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	grant, ge := core.cli.Grant(ctx, core.ttl)
 	if ge != nil {
 		core.retryLease()
 		core.logger.Error(fmt.Sprintf("%s %s\n", logPrefix, ge.Error()))
 		return
 	}
 
-	kac, ke := core.cli.KeepAlive(core.ctx, grant.ID)
+	kac, ke := core.cli.KeepAlive(ctx, grant.ID)
 	if ke != nil {
 		core.retryLease()
 		core.logger.Error(fmt.Sprintf("%s %s\n", logPrefix, ke.Error()))
