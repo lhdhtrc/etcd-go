@@ -1,6 +1,7 @@
 package etcd
 
 import (
+	"context"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"go.uber.org/zap"
 )
@@ -8,6 +9,9 @@ import (
 type CoreEntity struct {
 	cli   *clientv3.Client
 	lease clientv3.LeaseID
+
+	ctx    context.Context
+	cancel context.CancelFunc
 
 	ttl              int64
 	maxRetry         uint
