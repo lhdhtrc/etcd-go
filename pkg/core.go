@@ -38,15 +38,14 @@ func (core *CoreEntity) InitLease() {
 		core.logger.Error(fmt.Sprintf("%s %s\n", logPrefix, ge.Error()))
 		return
 	}
+	core.lease = grant.ID
 
-	kac, ke := core.cli.KeepAlive(ctx, grant.ID)
+	kac, ke := core.cli.KeepAlive(core.ctx, grant.ID)
 	if ke != nil {
 		core.retryLease()
 		core.logger.Error(fmt.Sprintf("%s %s\n", logPrefix, ke.Error()))
 		return
 	}
-	core.lease = grant.ID
-	core.countRetry = 0
 
 	go func() {
 		for range kac {
@@ -58,10 +57,11 @@ func (core *CoreEntity) InitLease() {
 }
 
 func (core *CoreEntity) Uninstall() {
-	if _, err := core.cli.Revoke(context.Background(), core.lease); err != nil {
+	if _, err := core.cli.Revoke(core.ctx, core.lease); err != nil {
 		fmt.Println(err.Error())
 		return
 	}
+	core.cancel()
 
 	fmt.Println("uninstall etcd success")
 }
@@ -87,10 +87,7 @@ func (core *CoreEntity) Pub(ctx context.Context, raw *RawEntity) {
 }
 
 func (core *CoreEntity) Sub(prefix string, adapter func(e *clientv3.Event)) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	wc := core.cli.Watch(ctx, prefix, clientv3.WithPrefix(), clientv3.WithPrevKV())
+	wc := core.cli.Watch(core.ctx, prefix, clientv3.WithPrefix(), clientv3.WithPrevKV())
 	go func() {
 		for v := range wc {
 			for _, e := range v.Events {
