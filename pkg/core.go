@@ -52,7 +52,8 @@ func (core *CoreEntity) InitLease() {
 		select {
 		case <-ctx.Done():
 			return
-		case _, ok := <-kac:
+		case r, ok := <-kac:
+			fmt.Println(r, ok)
 			if !ok {
 				core.retryLease()
 				return
