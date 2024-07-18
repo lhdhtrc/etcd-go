@@ -52,6 +52,19 @@ func (core *CoreEntity) install(config *ConfigEntity) *clientv3.Client {
 	return cli
 }
 
+func (core *CoreEntity) createLease() error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	grant, err := core.cli.Grant(ctx, core.ttl)
+	if err != nil {
+		return err
+	}
+	core.lease = grant.ID
+
+	return nil
+}
+
 func (core *CoreEntity) sustainLease() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -89,6 +102,12 @@ func (core *CoreEntity) retryLease() {
 
 		core.countRetry++
 		core.logger.Info(fmt.Sprintf("etcd retry lease: %d/%d", core.countRetry, core.maxRetry))
+
+		if err := core.createLease(); err != nil {
+			core.logger.Error(fmt.Sprintf("%s %s", err.Error()))
+			core.retryLease()
+			return
+		}
 		go core.sustainLease()
 
 		if core.leaseRetryAfter != nil {
