@@ -10,11 +10,7 @@ import (
 )
 
 func New(logger *zap.Logger, config *ConfigEntity) *CoreEntity {
-	ctx, cancel := context.WithCancel(context.Background())
-
 	core := &CoreEntity{
-		ctx:      ctx,
-		cancel:   cancel,
 		logger:   logger,
 		ttl:      config.TTL,
 		maxRetry: config.MaxRetry,
@@ -44,39 +40,35 @@ func (core *CoreEntity) InitLease() {
 	}
 	core.lease = grant.ID
 
-	kac, ke := core.cli.KeepAlive(core.ctx, grant.ID)
+	kac, ke := core.cli.KeepAlive(ctx, grant.ID)
 	if ke != nil {
 		core.retryLease()
 		core.logger.Error(fmt.Sprintf("%s %s\n", logPrefix, ke.Error()))
 		return
 	}
+	core.logger.Info(fmt.Sprintf("%s %s", logPrefix, "success ->"))
 
-	go func() {
-		for {
-			select {
-			case <-ctx.Done():
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case _, ok := <-kac:
+			if !ok {
+				core.retryLease()
 				return
-			case _, ok := <-kac:
-				if !ok {
-					core.retryLease()
-					return
-				}
-				if core.countRetry != 0 {
-					core.countRetry = 0
-				}
+			}
+			if core.countRetry != 0 {
+				core.countRetry = 0
 			}
 		}
-	}()
-
-	core.logger.Info(fmt.Sprintf("%s %s", logPrefix, "success ->"))
+	}
 }
 
 func (core *CoreEntity) Uninstall() {
-	if _, err := core.cli.Revoke(core.ctx, core.lease); err != nil {
+	if _, err := core.cli.Revoke(context.Background(), core.lease); err != nil {
 		fmt.Println(err.Error())
 		return
 	}
-	core.cancel()
 
 	fmt.Println("uninstall etcd success")
 }
@@ -102,12 +94,13 @@ func (core *CoreEntity) Pub(ctx context.Context, raw *RawEntity) {
 }
 
 func (core *CoreEntity) Sub(prefix string, adapter func(e *clientv3.Event)) {
-	wc := core.cli.Watch(core.ctx, prefix, clientv3.WithPrefix(), clientv3.WithPrevKV())
-	go func() {
-		for v := range wc {
-			for _, e := range v.Events {
-				adapter(e)
-			}
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	wc := core.cli.Watch(ctx, prefix, clientv3.WithPrefix(), clientv3.WithPrevKV())
+	for v := range wc {
+		for _, e := range v.Events {
+			adapter(e)
 		}
-	}()
+	}
 }
