@@ -6,6 +6,7 @@ import (
 	"fmt"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"go.uber.org/zap"
+	"time"
 )
 
 func New(logger *zap.Logger, config *ConfigEntity) *CoreEntity {
@@ -28,7 +29,7 @@ func (core *CoreEntity) InitLease() {
 		return
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	grant, ge := core.cli.Grant(ctx, core.ttl)
@@ -39,29 +40,9 @@ func (core *CoreEntity) InitLease() {
 	}
 	core.lease = grant.ID
 
-	kac, ke := core.cli.KeepAlive(ctx, grant.ID)
-	if ke != nil {
-		core.retryLease()
-		core.logger.Error(fmt.Sprintf("%s %s\n", logPrefix, ke.Error()))
-		return
-	}
-	core.logger.Info(fmt.Sprintf("%s %s", logPrefix, "success ->"))
+	go core.sustainLease()
 
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case r, ok := <-kac:
-			fmt.Println(r, ok)
-			if !ok {
-				core.retryLease()
-				return
-			}
-			if core.countRetry != 0 {
-				core.countRetry = 0
-			}
-		}
-	}
+	core.logger.Info(fmt.Sprintf("%s %s", logPrefix, "success ->"))
 }
 
 func (core *CoreEntity) Uninstall() {

@@ -52,6 +52,34 @@ func (core *CoreEntity) install(config *ConfigEntity) *clientv3.Client {
 	return cli
 }
 
+func (core *CoreEntity) sustainLease() {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	kac, ke := core.cli.KeepAlive(ctx, core.lease)
+	if ke != nil {
+		core.retryLease()
+		core.logger.Error(ke.Error())
+		return
+	}
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case r, ok := <-kac:
+			fmt.Println(r, ok)
+			if !ok {
+				core.retryLease()
+				return
+			}
+			if core.countRetry != 0 {
+				core.countRetry = 0
+			}
+		}
+	}
+}
+
 func (core *CoreEntity) retryLease() {
 	if core.countRetry < core.maxRetry {
 		if core.leaseRetryBefore != nil {
@@ -61,7 +89,7 @@ func (core *CoreEntity) retryLease() {
 
 		core.countRetry++
 		core.logger.Info(fmt.Sprintf("etcd retry lease: %d/%d", core.countRetry, core.maxRetry))
-		go core.InitLease()
+		go core.sustainLease()
 
 		if core.leaseRetryAfter != nil {
 			core.leaseRetryAfter()
