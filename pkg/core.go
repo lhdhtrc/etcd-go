@@ -52,9 +52,20 @@ func (core *CoreEntity) InitLease() {
 	}
 
 	go func() {
-		for range kac {
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case _, ok := <-kac:
+				if !ok {
+					core.retryLease()
+					return
+				}
+				if core.countRetry != 0 {
+					core.countRetry = 0
+				}
+			}
 		}
-		core.retryLease()
 	}()
 
 	core.logger.Info(fmt.Sprintf("%s %s", logPrefix, "success ->"))
