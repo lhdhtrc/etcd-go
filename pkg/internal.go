@@ -80,8 +80,7 @@ func (core *CoreEntity) sustainLease() {
 		select {
 		case <-ctx.Done():
 			return
-		case r, ok := <-kac:
-			fmt.Println(r, ok)
+		case _, ok := <-kac:
 			if !ok {
 				core.retryLease()
 				return
