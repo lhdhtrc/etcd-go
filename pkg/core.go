@@ -6,7 +6,6 @@ import (
 	"fmt"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"go.uber.org/zap"
-	"time"
 )
 
 func New(logger *zap.Logger, config *ConfigEntity) *CoreEntity {
@@ -29,7 +28,7 @@ func (core *CoreEntity) InitLease() {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	grant, ge := core.cli.Grant(ctx, core.ttl)
