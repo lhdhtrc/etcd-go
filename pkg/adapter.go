@@ -7,7 +7,7 @@ import (
 )
 
 // ServiceDiscoverAdapter 服务发现适配器
-func ServiceDiscoverAdapter(service map[string]*[]string) func(e *clientv3.Event) {
+func ServiceDiscoverAdapter(service map[string][]string) func(e *clientv3.Event) {
 	return func(e *clientv3.Event) {
 		var (
 			key string
@@ -29,13 +29,13 @@ func ServiceDiscoverAdapter(service map[string]*[]string) func(e *clientv3.Event
 		switch e.Type {
 		// PUT，新增或替换
 		case clientv3.EventTypePut:
-			*service[key] = append(*service[key], val)
-			*service[key] = array.Unique[string](*service[key], func(index int, item string) string {
+			service[key] = append(service[key], val)
+			service[key] = array.Unique[string](service[key], func(index int, item string) string {
 				return item
 			})
 		// DELETE
 		case clientv3.EventTypeDelete:
-			*service[key] = array.Filter(*service[key], func(index int, item string) bool {
+			service[key] = array.Filter(service[key], func(index int, item string) bool {
 				return item != val
 			})
 		}
