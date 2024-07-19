@@ -4,8 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"go.etcd.io/etcd/api/v3/mvccpb"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"go.uber.org/zap"
+	"time"
 )
 
 func New(logger *zap.Logger, config *ConfigEntity) *CoreEntity {
@@ -77,4 +79,16 @@ func (core *CoreEntity) Sub(prefix string, adapter func(e *clientv3.Event)) {
 			adapter(e)
 		}
 	}
+}
+
+func (core *CoreEntity) Find(prefix string, handle func(count int64, kvs []*mvccpb.KeyValue)) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	res, err := core.cli.Get(ctx, prefix, clientv3.WithPrefix())
+	if err != nil {
+		core.logger.Error(err.Error())
+		return
+	}
+	handle(res.Count, res.Kvs)
 }
