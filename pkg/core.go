@@ -69,10 +69,11 @@ func (core *CoreEntity) Pub(ctx context.Context, raw *RawEntity) {
 	}
 }
 
-func (core *CoreEntity) Sub(prefix string, adapter func(e *clientv3.Event)) {
+func (core *CoreEntity) Sub(prefix string, init func(count int64, kvs []*mvccpb.KeyValue), adapter func(e *clientv3.Event)) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	core.Find(prefix, init)
 	wc := core.cli.Watch(ctx, prefix, clientv3.WithPrefix(), clientv3.WithPrevKV())
 	for v := range wc {
 		for _, e := range v.Events {
