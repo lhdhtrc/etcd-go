@@ -14,6 +14,23 @@ type ServiceInstance struct {
 	NetworkId string `json:"network_id"`
 }
 
+// key(namespace + service_name)
+
+type Service struct {
+	Name    string            `json:"name"`
+	Nodes   []*ServiceNode    `json:"nodes"`
+	Methods map[string]string `json:"methods"`
+}
+
+type ServiceNode struct {
+	Lease         string `json:"lease"`
+	OuterNetIp    string `json:"outer_net_ip"`
+	InternalNetIp string `json:"internal_net_ip"`
+}
+
+type GatewayDiscovery struct {
+}
+
 // 服务注册仅注册服务（节点）不注册服务方法
 // 服务发现仅发现服务（节点）不发现方法
 
