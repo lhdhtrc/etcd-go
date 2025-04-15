@@ -7,10 +7,8 @@ type TLS struct {
 }
 
 type Config struct {
-	Tls TLS `json:"tls" bson:"tls" yaml:"tls" mapstructure:"tls"`
-
-	Account  string `json:"account" bson:"account" yaml:"account" mapstructure:"account"`
-	Password string `json:"password" bson:"password" yaml:"password" mapstructure:"password"`
-	Address  string `json:"address" yaml:"address" mapstructure:"address"`
-	Mode     bool   `json:"mode" yaml:"mode" mapstructure:"mode"` // Mode is true cluster
+	Username string   `json:"account" bson:"account" yaml:"account" mapstructure:"account"`
+	Password string   `json:"password" bson:"password" yaml:"password" mapstructure:"password"`
+	Tls      TLS      `json:"tls" bson:"tls" yaml:"tls" mapstructure:"tls"`
+	Endpoint []string `json:"endpoint" yaml:"endpoint" mapstructure:"endpoint"`
 }
