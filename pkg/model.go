@@ -9,6 +9,6 @@ type TLS struct {
 type Config struct {
 	Username string   `json:"account" bson:"account" yaml:"account" mapstructure:"account"`
 	Password string   `json:"password" bson:"password" yaml:"password" mapstructure:"password"`
-	Tls      TLS      `json:"tls" bson:"tls" yaml:"tls" mapstructure:"tls"`
+	Tls      *TLS     `json:"tls" bson:"tls" yaml:"tls" mapstructure:"tls"`
 	Endpoint []string `json:"endpoint" yaml:"endpoint" mapstructure:"endpoint"`
 }
