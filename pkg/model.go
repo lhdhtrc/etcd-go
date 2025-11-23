@@ -6,7 +6,7 @@ type TLS struct {
 	ClientCertKey string `json:"client_cert_key" bson:"client_cert_key" yaml:"client_cert_key" mapstructure:"client_cert_key"`
 }
 
-type Config struct {
+type Conf struct {
 	Username string   `json:"account" bson:"account" yaml:"account" mapstructure:"account"`
 	Password string   `json:"password" bson:"password" yaml:"password" mapstructure:"password"`
 	Tls      *TLS     `json:"tls" bson:"tls" yaml:"tls" mapstructure:"tls"`

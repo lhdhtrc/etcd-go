@@ -6,29 +6,29 @@ import (
 	"time"
 )
 
-func New(config *Config) (*clientv3.Client, error) {
-	conf := clientv3.Config{
+func New(conf *Conf) (*clientv3.Client, error) {
+	config := clientv3.Config{
 		DialTimeout: 5 * time.Second,
-		Endpoints:   config.Endpoint,
+		Endpoints:   conf.Endpoint,
 	}
 
-	if config.Username != "" && config.Password != "" {
-		conf.Username = config.Username
-		conf.Password = config.Password
+	if conf.Username != "" && conf.Password != "" {
+		config.Username = conf.Username
+		config.Password = conf.Password
 	}
-	if config.Tls.CaCert != "" && config.Tls.ClientCert != "" && config.Tls.ClientCertKey != "" {
+	if conf.Tls.CaCert != "" && conf.Tls.ClientCert != "" && conf.Tls.ClientCertKey != "" {
 		tlsInfo := transport.TLSInfo{
-			CertFile:      config.Tls.ClientCert,
-			KeyFile:       config.Tls.ClientCertKey,
-			TrustedCAFile: config.Tls.CaCert,
+			CertFile:      conf.Tls.ClientCert,
+			KeyFile:       conf.Tls.ClientCertKey,
+			TrustedCAFile: conf.Tls.CaCert,
 		}
 
 		tlsConfig, err := tlsInfo.ClientConfig()
 		if err != nil {
 			return nil, err
 		}
-		conf.TLS = tlsConfig
+		config.TLS = tlsConfig
 	}
 
-	return clientv3.New(conf)
+	return clientv3.New(config)
 }
